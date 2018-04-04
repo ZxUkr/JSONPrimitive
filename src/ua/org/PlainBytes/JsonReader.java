@@ -2,11 +2,12 @@ package ua.org.PlainBytes;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
-public class JSONPrimitive {
+public class JsonReader {
 	public enum TOKEN {
 		OBJECT, ARRAY, STRING, VALUE, COLON, COMMA
 	}
@@ -25,16 +26,17 @@ public class JSONPrimitive {
 	protected Boolean isRootObject = null;
 	protected Object result = null;
 
-	public JSONPrimitive() {
+	public JsonReader() {
 
 	}
 
-	public JSONPrimitive(File jsonFile) throws FileNotFoundException, IOException, ParseException {
+	public JsonReader(File jsonFile) throws FileNotFoundException, IOException, ParseException {
 		is = new BufferedInputStream(new FileInputStream(jsonFile));
 		result = parseJson(is);
+		is.close();
 	}
 
-	public JSONPrimitive(String rawJson) throws IOException, ParseException {
+	public JsonReader(String rawJson) throws IOException, ParseException {
 		is = new ByteArrayInputStream(rawJson.getBytes(StandardCharsets.UTF_8));
 		result = parseJson(is);
 	}
@@ -157,7 +159,7 @@ public class JSONPrimitive {
 						if (value.toString().trim().length() == 0) {
 							throw new ParseException("Unexpected COMMA in place of a " + current.toString() + ". At position " + (pos - 1), (int) (pos - 1));
 						}
-						data.put(name, value.toString().trim());
+						data.put(name, parsePrimitiveValue(value.toString()));
 						value.setLength(0);
 					} else if (current != TOKEN.COMMA) {
 						throw new ParseException("Unexpected COMMA in place of a " + current.toString() + ". At position " + (pos - 1), (int) (pos - 1));
@@ -227,7 +229,7 @@ public class JSONPrimitive {
 						if (value.toString().trim().length() == 0) {
 							throw new ParseException("Unexpected COMMA in place of a " + current.toString() + ". At position " + (pos - 1), (int) (pos - 1));
 						}
-						data.add(value.toString().trim());
+						data.add(parsePrimitiveValue(value.toString()));
 						value.setLength(0);
 					}
 					current = TOKEN.VALUE;
@@ -243,6 +245,23 @@ public class JSONPrimitive {
 				case ARRAY:
 					return;
 			}
+		}
+	}
+
+	protected Object parsePrimitiveValue(String rawValue) throws ParseException {
+		if (rawValue == null) return null;
+		rawValue = rawValue.trim();
+
+		if (rawValue.isEmpty() || rawValue.equalsIgnoreCase("null"))
+			return null;
+		if (rawValue.equalsIgnoreCase("true"))
+			return Boolean.TRUE;
+		if (rawValue.equalsIgnoreCase("false"))
+			return Boolean.FALSE;
+		try {
+			return NumberFormat.getInstance().parse(rawValue);
+		} catch (ParseException e) {
+			throw new ParseException("Unknown type of VALUE before position " + (pos - 1), (int) (pos - 1));
 		}
 	}
 
@@ -311,11 +330,5 @@ public class JSONPrimitive {
 			if (bracesClose[i] == symbol) return i;
 		}
 		return -1;
-	}
-
-	public String toJson(LinkedHashMap<String, Object> data) {
-		StringBuilder strBuf = new StringBuilder(Math.max(data.size() * 10, 1024));
-
-		return strBuf.toString();
 	}
 }
