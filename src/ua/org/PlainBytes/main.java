@@ -3,6 +3,7 @@ package ua.org.PlainBytes;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 public class main {
 	public static void main(String[] args) throws Throwable {
@@ -13,7 +14,7 @@ public class main {
 				"    \"balance\": \"$1,446.35\",\n" +
 				"    \"age\": 32,\n" +
 				"    \"eyeColor\": \"green\",\n" +
-				"    \"name\": \"Logan Keller\",\n" +
+				"    \"name\": \"\\uD834\\uDD1ELogan Keller\",\n" +
 				"    \"gender\": \"male\",\n" +
 				"    \"company\": \"ARTIQ\",\n" +
 				"    \"email\": \"logankeller@artiq.com\",\n" +
@@ -36,27 +37,31 @@ public class main {
 				"  }\n" +
 				"\n";
 
-		JSONPrimitive jsonPrimitive = new JSONPrimitive();
+		JsonReader jsonReader = new JsonReader();
 		LinkedHashMap<String, Object> dataMap = null;
 		ArrayList<Object> dataArray = null;
 
-		if (jsonPrimitive.parse(testJson)) {
-			dataMap = jsonPrimitive.getResultMap();
+		if (jsonReader.parse(testJson)) {
+			dataMap = jsonReader.getResultMap();
 		} else {
-			dataArray = jsonPrimitive.getResultArray();
+			dataArray = jsonReader.getResultArray();
 		}
 
+		JsonWriter jsonWriter = new JsonWriter();
+		String str = jsonWriter.writeToString(dataMap);
+
+		//=======================================================
 		long startTime = System.nanoTime();
 
-		if (jsonPrimitive.parse(new File("TestData/citylots.json"))) {
-			dataMap = jsonPrimitive.getResultMap();
+		if (jsonReader.parse(new File("TestData/citylots.json"))) {
+			dataMap = jsonReader.getResultMap();
 		} else {
-			dataArray = jsonPrimitive.getResultArray();
+			dataArray = jsonReader.getResultArray();
 		}
 
 		long endTime = System.nanoTime();
 		long duration = (endTime - startTime);
-		System.out.println("Executed time is: " + duration/1000000 +"ms.");
+		System.out.println("Executed time is: " + duration / 1000000 + "ms.");
 		dataMap.get("_id");
 		dataArray.get(0);
 	}
