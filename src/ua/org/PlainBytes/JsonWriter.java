@@ -30,30 +30,40 @@ public class JsonWriter {
 
 	}
 
-	public JsonWriter(LinkedHashMap<String, Object> data) throws FileNotFoundException, IOException {
+	public JsonWriter(LinkedHashMap<String, Object> data) {
 		//os = new BufferedOutputStream(new FileOutputStream(jsonFile));
 		isRootObject = true;
 		this.data = data;
 	}
 
-	public JsonWriter(ArrayList<Object> data) throws IOException {
+	public JsonWriter(ArrayList<Object> data) {
 		isRootObject = false;
 		this.data = data;
 	}
 
-	public String writeToString() throws IOException {
+	public String writeToString() {
 		ByteArrayOutputStream aos = new ByteArrayOutputStream();
-		writeToStream(aos, data);
-		return aos.toString("UTF-8");
+		try {
+			writeToStream(aos, data);
+		} catch (IOException e) {
+			//e.printStackTrace();
+		}
+		try {
+			return aos.toString("UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			//e.printStackTrace();
+		}
+
+		return null;
 	}
 
-	public String writeToString(LinkedHashMap<String, Object> data) throws IOException {
+	public String writeToString(LinkedHashMap<String, Object> data) {
 		isRootObject = true;
 		this.data = data;
 		return writeToString();
 	}
 
-	public String writeToString(ArrayList<Object> data) throws IOException {
+	public String writeToString(ArrayList<Object> data) {
 		isRootObject = false;
 		this.data = data;
 		return writeToString();
