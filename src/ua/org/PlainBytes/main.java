@@ -14,7 +14,7 @@ public class main {
 				"    \"balance\": \"$1,446.35\",\n" +
 				"    \"age\": 32,\n" +
 				"    \"eyeColor\": \"green\",\n" +
-				"    \"name\": \"\\uD834\\uDD1ELogan Keller\",\n" +
+				"    \"name\": \"\\uD834\\uDD1E Logan\\tKeller\",\n" +
 				"    \"gender\": \"male\",\n" +
 				"    \"company\": \"ARTIQ\",\n" +
 				"    \"email\": \"logankeller@artiq.com\",\n" +
@@ -47,11 +47,16 @@ public class main {
 			dataArray = jsonReader.getResultArray();
 		}
 
+		dataMap.put("testObject", new Bicycle(1,2,3));
+
 		JsonWriter jsonWriter = new JsonWriter();
 		String str = jsonWriter.writeToString(dataMap);
+		if (jsonReader.parse(str)) {
+			dataMap = jsonReader.getResultMap();
+		}
 
 		//=======================================================
-		long startTime = System.nanoTime();
+		/*long startTime = System.nanoTime();
 
 		if (jsonReader.parse(new File("TestData/citylots.json"))) {
 			dataMap = jsonReader.getResultMap();
@@ -61,8 +66,12 @@ public class main {
 
 		long endTime = System.nanoTime();
 		long duration = (endTime - startTime);
-		System.out.println("Executed time is: " + duration / 1000000 + "ms.");
-		dataMap.get("_id");
-		dataArray.get(0);
+		System.out.println("FromJson time is: " + duration / 1000000 + "ms.");
+
+		startTime = System.nanoTime();
+		jsonWriter.writeToFile(new File("TestData/citylots_remake.json"), dataMap);
+		endTime = System.nanoTime();
+		duration = (endTime - startTime);
+		System.out.println("ToJson time is: " + duration / 1000000 + "ms.");*/
 	}
 }
