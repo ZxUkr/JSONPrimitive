@@ -96,6 +96,11 @@ public class JsonReader {
 				case OBJECT:
 					LinkedHashMap<String, Object> dataMap = new LinkedHashMap<String, Object>();
 					parseObject(is, dataMap);
+					String className = dataMap.get("_java_class").toString();
+					if (className != null) {
+						Object valueObject = createCustomObject(className, dataMap);
+						return result = valueObject;
+					}
 					isRootObject = true;
 					return dataMap;
 				case ARRAY:
@@ -217,6 +222,11 @@ public class JsonReader {
 					LinkedHashMap<String, Object> subData = new LinkedHashMap<String, Object>();
 					data.add(subData);
 					parseObject(is, subData);
+					String className = subData.get("_java_class").toString();
+					if (className != null) {
+						Object valueObject = createCustomObject(className, subData);
+						if (valueObject != null) data.add(data.size() - 1, valueObject);
+					}
 					value.setLength(0);
 					current = TOKEN.COMMA;
 					break;
