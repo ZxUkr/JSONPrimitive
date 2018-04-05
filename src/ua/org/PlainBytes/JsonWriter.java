@@ -2,8 +2,6 @@ package ua.org.PlainBytes;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.text.NumberFormat;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -125,7 +123,7 @@ public class JsonWriter {
 			} else if (value instanceof ArrayList) {
 				writeArrayToStream(os, (ArrayList<Object>) value);
 			} else {
-				//todo custom writing
+				writeCustomToStream(os, value);
 			}
 			first = false;
 		}
@@ -226,5 +224,19 @@ public class JsonWriter {
 
 	protected void write4hexDigitsToStream(OutputStream os, char data) throws IOException {
 		os.write(String.format("\\u%x", (int) data).getBytes(StandardCharsets.UTF_8));
+	}
+
+	protected void writeCustomToStream(OutputStream os, Object data) throws IOException {
+		if (data == null) {
+			os.write("null".getBytes(StandardCharsets.UTF_8));
+			return;
+		}
+		String jsonValue = null;
+		if (data instanceof ToJson) {
+			jsonValue = ((ToJson) data).toJson();
+		} else {
+			jsonValue = String.format("{\"_java_class\":\"%s\", \"value\":\"%s\"}", data.getClass().getName(), data.toString());
+		}
+		os.write(jsonValue.getBytes(StandardCharsets.UTF_8));
 	}
 }

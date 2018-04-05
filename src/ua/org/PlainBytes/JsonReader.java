@@ -1,6 +1,9 @@
 package ua.org.PlainBytes;
 
 import java.io.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -36,9 +39,14 @@ public class JsonReader {
 		is.close();
 	}
 
-	public JsonReader(String rawJson) throws IOException, ParseException {
+	public JsonReader(String rawJson) throws ParseException {
 		is = new ByteArrayInputStream(rawJson.getBytes(StandardCharsets.UTF_8));
-		result = parseJson(is);
+		try {
+			result = parseJson(is);
+		} catch (IOException e) {
+			//e.printStackTrace();
+			result = null;
+		}
 	}
 
 	public Boolean isRootObject() {
@@ -59,10 +67,15 @@ public class JsonReader {
 		return null;
 	}
 
-	public boolean parse(String rawJson) throws IOException, ParseException {
+	public boolean parse(String rawJson) throws ParseException {
 		is = new ByteArrayInputStream(rawJson.getBytes(StandardCharsets.UTF_8));
 		isRootObject = null;
-		result = parseJson(is);
+		try {
+			result = parseJson(is);
+		} catch (IOException e) {
+			//e.printStackTrace();
+			result = null;
+		}
 		return isRootObject;
 	}
 
@@ -120,6 +133,11 @@ public class JsonReader {
 					LinkedHashMap<String, Object> subData = new LinkedHashMap<String, Object>();
 					data.put(name, subData);
 					parseObject(is, subData);
+					String className = subData.get("_java_class").toString();
+					if (className != null) {
+						Object valueObject = createCustomObject(className, subData);
+						if (valueObject != null) data.put(name, valueObject);
+					}
 					value.setLength(0);
 					current = TOKEN.COMMA;
 					break;
@@ -320,6 +338,30 @@ public class JsonReader {
 		pos += 4;
 		int value = Integer.parseInt(hex, 16);
 		return (char) value;
+	}
+
+	protected Object createCustomObject(String className, LinkedHashMap<String, Object> data) {
+		try {
+			Class<?> clazz = Class.forName(className);
+			for (Class<?> item : clazz.getInterfaces()) {
+				if (item.equals(FromJson.class)) {
+					Constructor<?> constr = null;
+					try {
+						Method method = clazz.getDeclaredMethod("fromJson", LinkedHashMap.class);
+						return method.invoke(null, data);
+					} catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+						//e.printStackTrace();
+					}
+
+					constr = clazz.getConstructor(LinkedHashMap.class);
+					return constr.newInstance(data);
+				}
+			}
+		} catch (ClassNotFoundException | InvocationTargetException | IllegalAccessException | NoSuchMethodException | InstantiationException e) {
+			//e.printStackTrace();
+		}
+
+		return null;
 	}
 
 	protected static int isOpen(char symbol) {
