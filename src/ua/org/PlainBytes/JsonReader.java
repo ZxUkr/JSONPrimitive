@@ -41,6 +41,10 @@ public class JsonReader {
 		result = parseJson(is);
 	}
 
+	public Boolean isRootObject() {
+		return isRootObject;
+	}
+
 	public Object getResult() {
 		return result;
 	}
