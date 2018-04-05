@@ -93,6 +93,8 @@ public class JsonWriter {
 		} else if (data instanceof ArrayList) {
 			isRootObject = true;
 			writeArrayToStream(os, (ArrayList<Object>) data);
+		} else {
+			writeValueToStream(os, data);
 		}
 	}
 
@@ -105,26 +107,9 @@ public class JsonWriter {
 		boolean first = true;
 		for (Map.Entry<String, Object> item : data.entrySet()) {
 			if (!first) os.write(bracesOpen[COMMA]);
-			os.write(bracesOpen[STRING1]);
-			os.write(item.getKey().getBytes(StandardCharsets.UTF_8));
-			os.write(bracesOpen[STRING1]);
+			writeStringToStream(os, item.getKey());
 			os.write(bracesOpen[COLON]);
-			Object value = item.getValue();
-			if (value == null) {
-				os.write("null".getBytes(StandardCharsets.UTF_8));
-			} else if (value instanceof String) {
-				writeStringToStream(os, (String) value);
-			} else if (value instanceof Number) {
-				writeNumberToStream(os, (Number) value);
-			} else if (value instanceof Boolean) {
-				writeBooleanToStream(os, (Boolean) value);
-			} else if (value instanceof LinkedHashMap) {
-				writeObjectToStream(os, (LinkedHashMap<String, Object>) value);
-			} else if (value instanceof ArrayList) {
-				writeArrayToStream(os, (ArrayList<Object>) value);
-			} else {
-				writeCustomToStream(os, value);
-			}
+			writeValueToStream(os, item.getValue());
 			first = false;
 		}
 		os.write(bracesClose[OBJECT]);
@@ -139,24 +124,28 @@ public class JsonWriter {
 		boolean first = true;
 		for (Object value : data) {
 			if (!first) os.write(bracesOpen[COMMA]);
-			if (value == null) {
-				os.write("null".getBytes(StandardCharsets.UTF_8));
-			} else if (value instanceof String) {
-				writeStringToStream(os, (String) value);
-			} else if (value instanceof Number) {
-				writeNumberToStream(os, (Number) value);
-			} else if (value instanceof Boolean) {
-				writeBooleanToStream(os, (Boolean) value);
-			} else if (value instanceof LinkedHashMap) {
-				writeObjectToStream(os, (LinkedHashMap<String, Object>) value);
-			} else if (value instanceof ArrayList) {
-				writeArrayToStream(os, (ArrayList<Object>) value);
-			} else {
-				//todo custom writing
-			}
+			writeValueToStream(os, value);
 			first = false;
 		}
 		os.write(bracesClose[ARRAY]);
+	}
+
+	protected void writeValueToStream(OutputStream os, Object value) throws IOException {
+		if (value == null) {
+			os.write("null".getBytes(StandardCharsets.UTF_8));
+		} else if (value instanceof String) {
+			writeStringToStream(os, (String) value);
+		} else if (value instanceof Number) {
+			writeNumberToStream(os, (Number) value);
+		} else if (value instanceof Boolean) {
+			writeBooleanToStream(os, (Boolean) value);
+		} else if (value instanceof LinkedHashMap) {
+			writeObjectToStream(os, (LinkedHashMap<String, Object>) value);
+		} else if (value instanceof ArrayList) {
+			writeArrayToStream(os, (ArrayList<Object>) value);
+		} else {
+			writeCustomToStream(os, value);
+		}
 	}
 
 	protected void writeStringToStream(OutputStream os, String data) throws IOException {
@@ -234,9 +223,11 @@ public class JsonWriter {
 		String jsonValue = null;
 		if (data instanceof ToJson) {
 			jsonValue = ((ToJson) data).toJson();
+			os.write(jsonValue.getBytes(StandardCharsets.UTF_8));
 		} else {
-			jsonValue = String.format("{\"_java_class\":\"%s\", \"value\":\"%s\"}", data.getClass().getName(), data.toString());
+			//jsonValue = String.format("{\"_java_class\":\"%s\", \"value\":\"%s\"}", data.getClass().getName(), data.toString());
+			//os.write(jsonValue.getBytes(StandardCharsets.UTF_8));
+			writeStringToStream(os, data.toString());
 		}
-		os.write(jsonValue.getBytes(StandardCharsets.UTF_8));
 	}
 }
