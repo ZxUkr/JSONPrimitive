@@ -96,7 +96,7 @@ public class JsonReader {
 				case OBJECT:
 					LinkedHashMap<String, Object> dataMap = new LinkedHashMap<String, Object>();
 					parseObject(is, dataMap);
-					String className = dataMap.get("_java_class").toString();
+					String className = (String) dataMap.get("_java_class");
 					if (className != null) {
 						Object valueObject = createCustomObject(className, dataMap);
 						return result = valueObject;
@@ -138,7 +138,7 @@ public class JsonReader {
 					LinkedHashMap<String, Object> subData = new LinkedHashMap<String, Object>();
 					data.put(name, subData);
 					parseObject(is, subData);
-					String className = subData.get("_java_class").toString();
+					String className = (String) subData.get("_java_class");
 					if (className != null) {
 						Object valueObject = createCustomObject(className, subData);
 						if (valueObject != null) data.put(name, valueObject);
@@ -222,7 +222,7 @@ public class JsonReader {
 					LinkedHashMap<String, Object> subData = new LinkedHashMap<String, Object>();
 					data.add(subData);
 					parseObject(is, subData);
-					String className = subData.get("_java_class").toString();
+					String className = (String) subData.get("_java_class");
 					if (className != null) {
 						Object valueObject = createCustomObject(className, subData);
 						if (valueObject != null) data.add(data.size() - 1, valueObject);
