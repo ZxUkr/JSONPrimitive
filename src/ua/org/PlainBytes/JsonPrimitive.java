@@ -8,7 +8,11 @@ import java.util.LinkedHashMap;
 
 public class JsonPrimitive {
 	public static String toJson(Object object) {
-		JsonWriter jw = new JsonWriter();
+		return toJson(object, false);
+	}
+
+	public static String toJson(Object object, boolean formattedOutput) {
+		JsonWriter jw = new JsonWriter(formattedOutput);
 		ByteArrayOutputStream aos = new ByteArrayOutputStream();
 		try {
 			jw.writeToStream(aos, object);
