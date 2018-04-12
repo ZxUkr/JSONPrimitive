@@ -1,18 +1,19 @@
 package ua.org.PlainBytes;
 
 import java.io.File;
+import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 
 public class main {
 	public static void main(String[] args) throws Throwable {
-		String testJson = "\n" +
+		String someJsonString = "\n" +
 				"  {\n" +
-				"    \"_id\": \"5973782bdb9a930533b05cb2\",\n" +
-				"    \"isActive\": true,\n" +
+				"    id: \"5973782bdb9a930533b05cb2\",\n" +
+				"    isActive: true,\n" +
 				"    \"balance\": \"$1,446.35\",\n" +
-				"    \"age\": 32,\n" +
+				"    age: 32,\n" +
 				"    \"eyeColor\": \"green\",\n" +
 				"    \"name\": \"\\uD834\\uDD1E Logan\\tKeller\",\n" +
 				"    \"gender\": \"male\",\n" +
@@ -37,41 +38,76 @@ public class main {
 				"  }\n" +
 				"\n";
 
-		JsonReader jsonReader = new JsonReader();
+		//Parse String with json
+		//This method does't throw eny exception just return null
+		LinkedHashMap<String, Object> parsedData = JsonPrimitive.fromJson(someJsonString);
+
+		//Convert Object to json String in human-readable format
+		String json = JsonPrimitive.toJson(parsedData,true);
+
+		//=================================================================================================
+		//If you want more control
 		LinkedHashMap<String, Object> dataMap = null;
 		ArrayList<Object> dataArray = null;
 
-		if (jsonReader.parse(testJson)) {
-			dataMap = jsonReader.getResultMap();
-		} else {
-			dataArray = jsonReader.getResultArray();
+		JsonReader jsonReader = new JsonReader();
+		JsonWriter jsonWriter = new JsonWriter(true);
+
+
+		try {
+			//Parse String with json
+			//This method return true if root object is LinkedHashMap and false if it is ArrayList
+			if (jsonReader.parse(someJsonString)) {
+				//get result
+				dataMap = jsonReader.getResultMap();
+			} else {
+				//get result
+				dataArray = jsonReader.getResultArray();
+			}
+		} catch (ParseException e) {
+			e.printStackTrace();
 		}
 
+		try {
+			//Write object to json file
+			jsonWriter.writeToFile(new File("someFile.json"), dataMap);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		//Also you can read and write to any Stream
+		//jsonWriter.writeToStream(OutputStream, Object);
+		//jsonReader.parseJson(InputStream)
+
+
+		//===================================================================================================
+		//If you want work with your custom class objects
+		//You have to implement interface FromJson and/or ToJson which will works with LinkedHashMap<String, Object>
 		dataMap.put("testObject", new Bicycle(1,2,3));
 
-		JsonWriter jsonWriter = new JsonWriter();
+
 		String str = jsonWriter.writeToString(dataMap);
 		if (jsonReader.parse(str)) {
 			dataMap = jsonReader.getResultMap();
 		}
 
-		//=======================================================
-		/*long startTime = System.nanoTime();
 
+		//===================================================================================================
+		//Some performance test with 190Mb file
+		long startTime = System.nanoTime();
 		if (jsonReader.parse(new File("TestData/citylots.json"))) {
 			dataMap = jsonReader.getResultMap();
 		} else {
 			dataArray = jsonReader.getResultArray();
 		}
-
 		long endTime = System.nanoTime();
 		long duration = (endTime - startTime);
 		System.out.println("FromJson time is: " + duration / 1000000 + "ms.");
 
 		startTime = System.nanoTime();
-		jsonWriter.writeToFile(new File("TestData/citylots_remake.json"), dataMap);
+		jsonWriter.writeToFile(new File("TestData/citylots_remake.json"), dataArray);
 		endTime = System.nanoTime();
 		duration = (endTime - startTime);
-		System.out.println("ToJson time is: " + duration / 1000000 + "ms.");*/
+		System.out.println("ToJson time is: " + duration / 1000000 + "ms.");
 	}
 }
