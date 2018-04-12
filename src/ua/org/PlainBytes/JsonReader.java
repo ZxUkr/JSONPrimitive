@@ -49,7 +49,7 @@ public class JsonReader {
 	}
 
 	public Boolean isRootObject() {
-		return isRootObject;
+		return isRootObject==null || isRootObject;
 	}
 
 	public Object getResult() {
@@ -75,14 +75,14 @@ public class JsonReader {
 			//e.printStackTrace();
 			result = null;
 		}
-		return isRootObject;
+		return isRootObject==null || isRootObject;
 	}
 
 	public boolean parse(File jsonFile) throws IOException, ParseException {
 		InputStream is = new BufferedInputStream(new FileInputStream(jsonFile));
 		isRootObject = null;
 		result = parseJson(is);
-		return isRootObject;
+		return isRootObject==null || isRootObject;
 	}
 
 	public Object parseJson(InputStream is) throws IOException, ParseException {

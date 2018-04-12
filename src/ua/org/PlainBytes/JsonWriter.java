@@ -27,6 +27,10 @@ public class JsonWriter {
 	protected Object data = null;
 	protected String newLineSeparator = "\r\n";
 
+	public void setFormattedOutput(boolean formattedOutput) {
+		this.formattedOutput = formattedOutput;
+	}
+
 	public JsonWriter() {
 
 	}
@@ -64,14 +68,9 @@ public class JsonWriter {
 		return null;
 	}
 
-	public String writeToString(LinkedHashMap<String, Object> data) {
-		isRootObject = true;
-		this.data = data;
-		return writeToString();
-	}
-
-	public String writeToString(ArrayList<Object> data) {
-		isRootObject = false;
+	public String writeToString(Object data) {
+		if (!(data instanceof ArrayList)) isRootObject = true;
+		else isRootObject = false;
 		this.data = data;
 		return writeToString();
 	}
@@ -82,14 +81,9 @@ public class JsonWriter {
 		bos.close();
 	}
 
-	public void writeToFile(File jsonFile, LinkedHashMap<String, Object> data) throws IOException {
-		isRootObject = true;
-		this.data = data;
-		writeToFile(jsonFile);
-	}
-
-	public void writeToFile(File jsonFile, ArrayList<Object> data) throws IOException {
-		isRootObject = false;
+	public void writeToFile(File jsonFile, Object data) throws IOException {
+		if (!(data instanceof ArrayList)) isRootObject = true;
+		else isRootObject = false;
 		this.data = data;
 		writeToFile(jsonFile);
 	}
