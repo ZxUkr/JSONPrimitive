@@ -21,21 +21,30 @@ public class JsonWriter {
 	protected static final char[] bracesClose = {'}', ']', '"', '\''};
 
 	protected long pos;
+	int depth = 0;
 	protected Boolean isRootObject = null;
+	protected boolean formattedOutput = false;
 	protected Object data = null;
+	protected String newLineSeparator = "\r\n";
 
 	public JsonWriter() {
 
 	}
 
-	public JsonWriter(LinkedHashMap<String, Object> data) {
+	public JsonWriter(boolean formattedOutput) {
+		this.formattedOutput = formattedOutput;
+	}
+
+	public JsonWriter(LinkedHashMap<String, Object> data, boolean formattedOutput) {
 		//os = new BufferedOutputStream(new FileOutputStream(jsonFile));
 		isRootObject = true;
+		this.formattedOutput = formattedOutput;
 		this.data = data;
 	}
 
-	public JsonWriter(ArrayList<Object> data) {
+	public JsonWriter(ArrayList<Object> data, boolean formattedOutput) {
 		isRootObject = false;
+		this.formattedOutput = formattedOutput;
 		this.data = data;
 	}
 
@@ -87,6 +96,7 @@ public class JsonWriter {
 
 	public void writeToStream(OutputStream os, Object data) throws IOException {
 		pos = 0L;
+		depth = 0;
 		if (data instanceof LinkedHashMap) {
 			isRootObject = true;
 			writeObjectToStream(os, (LinkedHashMap<String, Object>) data);
@@ -105,12 +115,32 @@ public class JsonWriter {
 		}
 		os.write(bracesOpen[OBJECT]);
 		boolean first = true;
-		for (Map.Entry<String, Object> item : data.entrySet()) {
-			if (!first) os.write(bracesOpen[COMMA]);
-			writeStringToStream(os, item.getKey());
-			os.write(bracesOpen[COLON]);
-			writeValueToStream(os, item.getValue());
-			first = false;
+		if (formattedOutput) {
+			depth++;
+			for (Map.Entry<String, Object> item : data.entrySet()) {
+				if (!first) os.write(bracesOpen[COMMA]);
+				os.write(newLineSeparator.getBytes(StandardCharsets.UTF_8));
+				writeIndent(os);
+				writeStringToStream(os, item.getKey());
+				os.write(' ');
+				os.write(bracesOpen[COLON]);
+				os.write(' ');
+				writeValueToStream(os, item.getValue());
+				first = false;
+			}
+			depth--;
+			if (data.size() > 0) {
+				os.write(newLineSeparator.getBytes(StandardCharsets.UTF_8));
+				writeIndent(os);
+			}
+		} else {
+			for (Map.Entry<String, Object> item : data.entrySet()) {
+				if (!first) os.write(bracesOpen[COMMA]);
+				writeStringToStream(os, item.getKey());
+				os.write(bracesOpen[COLON]);
+				writeValueToStream(os, item.getValue());
+				first = false;
+			}
 		}
 		os.write(bracesClose[OBJECT]);
 	}
@@ -122,10 +152,29 @@ public class JsonWriter {
 		}
 		os.write(bracesOpen[ARRAY]);
 		boolean first = true;
-		for (Object value : data) {
-			if (!first) os.write(bracesOpen[COMMA]);
-			writeValueToStream(os, value);
-			first = false;
+		if (formattedOutput) {
+			depth++;
+			for (Object value : data) {
+				if (!first) {
+					os.write(bracesOpen[COMMA]);
+					os.write(' ');
+				}
+				//if (!(value instanceof String || value instanceof Number || value instanceof Boolean)) {
+				//	os.write(newLineSeparator.getBytes(StandardCharsets.UTF_8));
+				//	writeIndent(os);
+				//} else if (!first) {
+				//	os.write(' ');
+				//}
+				writeValueToStream(os, value);
+				first = false;
+			}
+			depth--;
+		} else {
+			for (Object value : data) {
+				if (!first) os.write(bracesOpen[COMMA]);
+				writeValueToStream(os, value);
+				first = false;
+			}
 		}
 		os.write(bracesClose[ARRAY]);
 	}
@@ -229,5 +278,9 @@ public class JsonWriter {
 			//os.write(jsonValue.getBytes(StandardCharsets.UTF_8));
 			writeStringToStream(os, data.toString());
 		}
+	}
+
+	protected void writeIndent(OutputStream os) throws IOException {
+		for (int i = 0; i < depth; i++) os.write('\t');
 	}
 }

@@ -25,7 +25,6 @@ public class JsonReader {
 	protected static final char[] bracesClose = {'}', ']', '"', '\''};
 
 	protected long pos;
-	protected InputStream is = null;
 	protected Boolean isRootObject = null;
 	protected Object result = null;
 
@@ -34,13 +33,13 @@ public class JsonReader {
 	}
 
 	public JsonReader(File jsonFile) throws FileNotFoundException, IOException, ParseException {
-		is = new BufferedInputStream(new FileInputStream(jsonFile));
+		InputStream is = new BufferedInputStream(new FileInputStream(jsonFile));
 		result = parseJson(is);
 		is.close();
 	}
 
 	public JsonReader(String rawJson) throws ParseException {
-		is = new ByteArrayInputStream(rawJson.getBytes(StandardCharsets.UTF_8));
+		InputStream is = new ByteArrayInputStream(rawJson.getBytes(StandardCharsets.UTF_8));
 		try {
 			result = parseJson(is);
 		} catch (IOException e) {
@@ -68,7 +67,7 @@ public class JsonReader {
 	}
 
 	public boolean parse(String rawJson) throws ParseException {
-		is = new ByteArrayInputStream(rawJson.getBytes(StandardCharsets.UTF_8));
+		InputStream is = new ByteArrayInputStream(rawJson.getBytes(StandardCharsets.UTF_8));
 		isRootObject = null;
 		try {
 			result = parseJson(is);
@@ -80,7 +79,7 @@ public class JsonReader {
 	}
 
 	public boolean parse(File jsonFile) throws IOException, ParseException {
-		is = new BufferedInputStream(new FileInputStream(jsonFile));
+		InputStream is = new BufferedInputStream(new FileInputStream(jsonFile));
 		isRootObject = null;
 		result = parseJson(is);
 		return isRootObject;
