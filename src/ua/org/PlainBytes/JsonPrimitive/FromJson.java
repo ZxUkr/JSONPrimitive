@@ -1,6 +1,5 @@
-package ua.org.PlainBytes;
+package ua.org.PlainBytes.JsonPrimitive;
 
-import java.io.IOException;
 import java.text.ParseException;
 import java.util.LinkedHashMap;
 

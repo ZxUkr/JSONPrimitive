@@ -1,4 +1,4 @@
-package ua.org.PlainBytes;
+package ua.org.PlainBytes.JsonPrimitive;
 
 import java.io.*;
 import java.lang.reflect.Constructor;
@@ -10,36 +10,36 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
-public class JsonReader {
+public class JsonStrictReader {
 	public enum TOKEN {
 		OBJECT, ARRAY, STRING, VALUE, COLON, COMMA
 	}
 
 	protected static final int OBJECT = 0;
 	protected static final int ARRAY = 1;
-	protected static final int STRING1 = 2;
-	protected static final int STRING2 = 3;
-	protected static final int COLON = 4; //':';
-	protected static final int COMMA = 5; //',';
-	protected static final char[] bracesOpen = {'{', '[', '"', '\'', ':', ','};
-	protected static final char[] bracesClose = {'}', ']', '"', '\''};
+	protected static final int STRING = 2;
+	protected static final int COLON = 3; //':';
+	protected static final int COMMA = 4; //',';
+	protected static final char[] bracesOpen = {'{', '[', '"', ':', ','};
+	protected static final char[] bracesClose = {'}', ']', '"'};
 
 	protected long pos;
+	protected InputStream is = null;
 	protected Boolean isRootObject = null;
 	protected Object result = null;
 
-	public JsonReader() {
+	public JsonStrictReader() {
 
 	}
 
-	public JsonReader(File jsonFile) throws FileNotFoundException, IOException, ParseException {
-		InputStream is = new BufferedInputStream(new FileInputStream(jsonFile));
+	public JsonStrictReader(File jsonFile) throws FileNotFoundException, IOException, ParseException {
+		is = new BufferedInputStream(new FileInputStream(jsonFile));
 		result = parseJson(is);
 		is.close();
 	}
 
-	public JsonReader(String rawJson) throws ParseException {
-		InputStream is = new ByteArrayInputStream(rawJson.getBytes(StandardCharsets.UTF_8));
+	public JsonStrictReader(String rawJson) throws ParseException {
+		is = new ByteArrayInputStream(rawJson.getBytes(StandardCharsets.UTF_8));
 		try {
 			result = parseJson(is);
 		} catch (IOException e) {
@@ -49,7 +49,7 @@ public class JsonReader {
 	}
 
 	public Boolean isRootObject() {
-		return isRootObject==null || isRootObject;
+		return isRootObject;
 	}
 
 	public Object getResult() {
@@ -66,8 +66,8 @@ public class JsonReader {
 		return null;
 	}
 
-	public boolean parse(String rawJson) throws ParseException {
-		InputStream is = new ByteArrayInputStream(rawJson.getBytes(StandardCharsets.UTF_8));
+	public Boolean parse(String rawJson) throws ParseException {
+		is = new ByteArrayInputStream(rawJson.getBytes(StandardCharsets.UTF_8));
 		isRootObject = null;
 		try {
 			result = parseJson(is);
@@ -75,14 +75,14 @@ public class JsonReader {
 			//e.printStackTrace();
 			result = null;
 		}
-		return isRootObject==null || isRootObject;
+		return isRootObject;
 	}
 
 	public boolean parse(File jsonFile) throws IOException, ParseException {
-		InputStream is = new BufferedInputStream(new FileInputStream(jsonFile));
+		is = new BufferedInputStream(new FileInputStream(jsonFile));
 		isRootObject = null;
 		result = parseJson(is);
-		return isRootObject==null || isRootObject;
+		return isRootObject;
 	}
 
 	public Object parseJson(InputStream is) throws IOException, ParseException {
@@ -107,10 +107,8 @@ public class JsonReader {
 					parseArray(is, dataArray);
 					isRootObject = false;
 					return dataArray;
-				case STRING1:
+				case STRING:
 					throw new ParseException("Unexpected symbol \" at this position. At position " + (pos - 1), (int) (pos - 1));
-				case STRING2:
-					throw new ParseException("Unexpected symbol ' at this position. At position " + (pos - 1), (int) (pos - 1));
 				case COLON:
 					throw new ParseException("Unexpected COLON at this position. At position " + (pos - 1), (int) (pos - 1));
 				case COMMA:
@@ -155,33 +153,17 @@ public class JsonReader {
 					value.setLength(0);
 					current = TOKEN.COMMA;
 					break;
-				case STRING1:
+				case STRING:
 					if (current == TOKEN.STRING) {
-						name = parseString(is, STRING1);
+						name = parseString(is);
 						current = TOKEN.COLON;
 					} else if (current == TOKEN.VALUE) {
-						data.put(name, parseString(is, STRING1));
-						current = TOKEN.COMMA;
-					}
-					break;
-				case STRING2:
-					if (current == TOKEN.STRING) {
-						name = parseString(is, STRING2);
-						current = TOKEN.COLON;
-					} else if (current == TOKEN.VALUE) {
-						data.put(name, parseString(is, STRING2));
+						data.put(name, parseString(is));
 						current = TOKEN.COMMA;
 					}
 					break;
 				case COLON:
-					if (current == TOKEN.STRING) {
-						if (value.toString().trim().length() == 0) {
-							throw new ParseException("Unexpected COLON in place of a " + current.toString() + ". At position " + (pos - 1), (int) (pos - 1));
-						}
-						name = value.toString().trim();
-						value.setLength(0);
-						current = TOKEN.VALUE;
-					} else if (current == TOKEN.COLON) {
+					if (current == TOKEN.COLON) {
 						current = TOKEN.VALUE;
 					} else {
 						throw new ParseException("Unexpected COLON in place of a " + current.toString() + ". At position " + (pos - 1), (int) (pos - 1));
@@ -200,7 +182,7 @@ public class JsonReader {
 					current = TOKEN.STRING;
 					continue;
 				default:
-					if (current == TOKEN.STRING || current == TOKEN.VALUE) {
+					if (current == TOKEN.VALUE) {
 						value.append(realChar);
 					}
 			}
@@ -246,18 +228,11 @@ public class JsonReader {
 					value.setLength(0);
 					current = TOKEN.COMMA;
 					break;
-				case STRING1:
+				case STRING:
 					if (current != TOKEN.VALUE) {
 						throw new ParseException("Unexpected symbol \" in place of a " + current.toString() + ". At position " + (pos - 1), (int) (pos - 1));
 					}
-					data.add(parseString(is, STRING1));
-					current = TOKEN.COMMA;
-					continue;
-				case STRING2:
-					if (current != TOKEN.VALUE) {
-						throw new ParseException("Unexpected symbol \' in place of a " + current.toString() + ". At position " + (pos - 1), (int) (pos - 1));
-					}
-					data.add(parseString(is, STRING2));
+					data.add(parseString(is));
 					current = TOKEN.COMMA;
 					continue;
 				case COLON:
@@ -299,18 +274,18 @@ public class JsonReader {
 		try {
 			return NumberFormat.getInstance().parse(rawValue);
 		} catch (ParseException e) {
-			throw new ParseException("Unknown type of VALUE before position " + (pos - 1) + ". " + e.getMessage(), (int) (pos - 1));
+			throw new ParseException("Unknown type of VALUE before position " + (pos - 1) + ". " +e.getMessage(), (int) (pos - 1));
 		}
 	}
 
-	protected String parseString(InputStream is, int token) throws IOException {
+	protected String parseString(InputStream is) throws IOException {
 		int oneChar, prevChar = -1;
 		StringBuilder str = new StringBuilder();
 		while ((oneChar = is.read()) != -1) {
 			pos++;
 			char realChar = (char) oneChar;
 			if (prevChar != '\\') {
-				if (realChar == bracesClose[token]) return str.toString();
+				if (realChar == bracesClose[STRING]) return str.toString();
 				else if (realChar != '\\') str.append(realChar);
 				prevChar = oneChar;
 			} else {
