@@ -14,10 +14,8 @@ public interface FromJson {
 			//e.printStackTrace();
 		}
 
-		return fromJson(dataMap);
+		return fromJsonMap(dataMap);
 	}
 
-	static Object fromJson(LinkedHashMap<String, Object> data) {
-		return null;
-	}
+	Object fromJsonMap(LinkedHashMap<String, Object> data);
 }
