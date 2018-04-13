@@ -1,4 +1,4 @@
-package ua.org.PlainBytes;
+package ua.org.PlainBytes.JsonPrimitive;
 
 import java.io.File;
 import java.io.IOException;
