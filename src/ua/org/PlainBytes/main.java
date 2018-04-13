@@ -39,7 +39,7 @@ public class main {
 				"\n";
 
 		//Parse String with json
-		//This method does't throw eny exception just return null
+		//This method does't throw any exception just return null
 		LinkedHashMap<String, Object> parsedData = JsonPrimitive.fromJson(someJsonString);
 
 		//Convert Object to json String in human-readable format

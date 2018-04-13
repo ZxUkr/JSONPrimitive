@@ -39,7 +39,7 @@ public class Bicycle implements ToJson, FromJson {
 	}
 
 	//@Override
-	public static Object fromJson(LinkedHashMap<String, Object> data) {
+	public Object fromJsonMap(LinkedHashMap<String, Object> data) {
 		return new Bicycle(((Long)data.get("cadence")).intValue(), ((Long)data.get("gear")).intValue(), ((Long)data.get("speed")).intValue());
 	}
 }
