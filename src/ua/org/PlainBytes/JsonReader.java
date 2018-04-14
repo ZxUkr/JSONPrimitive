@@ -49,7 +49,7 @@ public class JsonReader {
 	}
 
 	public Boolean isRootObject() {
-		return isRootObject==null || isRootObject;
+		return isRootObject == null || isRootObject;
 	}
 
 	public Object getResult() {
@@ -75,14 +75,14 @@ public class JsonReader {
 			//e.printStackTrace();
 			result = null;
 		}
-		return isRootObject==null || isRootObject;
+		return isRootObject == null || isRootObject;
 	}
 
 	public boolean parse(File jsonFile) throws IOException, ParseException {
 		InputStream is = new BufferedInputStream(new FileInputStream(jsonFile));
 		isRootObject = null;
 		result = parseJson(is);
-		return isRootObject==null || isRootObject;
+		return isRootObject == null || isRootObject;
 	}
 
 	public Object parseJson(InputStream is) throws IOException, ParseException {
@@ -296,11 +296,20 @@ public class JsonReader {
 			return Boolean.TRUE;
 		if (rawValue.equalsIgnoreCase("false"))
 			return Boolean.FALSE;
+
 		try {
+			if (rawValue.indexOf('.') > -1 || rawValue.indexOf('e') > -1 || rawValue.indexOf('E') > -1) {
+				return Double.valueOf(rawValue);
+			} else
+				return Long.valueOf(rawValue);
+		} catch (NumberFormatException e) {
+			throw new ParseException("Unknown type of VALUE before position " + (pos - 1) + ". " + e.getMessage(), (int) (pos - 1));
+		}
+		/*try {
 			return NumberFormat.getInstance().parse(rawValue);
 		} catch (ParseException e) {
 			throw new ParseException("Unknown type of VALUE before position " + (pos - 1) + ". " + e.getMessage(), (int) (pos - 1));
-		}
+		}*/
 	}
 
 	protected String parseString(InputStream is, int token) throws IOException {
