@@ -1,6 +1,5 @@
-package ua.org.PlainBytes;
+package ua.org.PlainBytes.JsonPrimitive;
 
-import java.io.IOException;
 import java.text.ParseException;
 import java.util.LinkedHashMap;
 
@@ -14,10 +13,8 @@ public interface FromJson {
 			//e.printStackTrace();
 		}
 
-		return fromJson(dataMap);
+		return fromJsonMap(dataMap);
 	}
 
-	static Object fromJson(LinkedHashMap<String, Object> data) {
-		return null;
-	}
+	Object fromJsonMap(LinkedHashMap<String, Object> data);
 }

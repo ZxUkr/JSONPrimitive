@@ -1,9 +1,8 @@
-package ua.org.PlainBytes;
+package ua.org.PlainBytes.JsonPrimitive;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
 public class JsonPrimitive {
