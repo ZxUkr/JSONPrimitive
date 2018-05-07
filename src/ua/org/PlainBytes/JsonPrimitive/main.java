@@ -10,6 +10,7 @@ public class main {
 	public static void main(String[] args) throws Throwable {
 		String someJsonString = "\n" +
 				"  {\n" +
+				"    label:\"Ім’я\"," +
 				"    id: \"5973782bdb9a930533b05cb2\",\n" +
 				"    isActive: true,\n" +
 				"    \"balance\": \"$1,446.35\",\n" +
