@@ -278,7 +278,8 @@ public class JsonStrictReader {
 		}
 	}
 
-	protected String parseString(InputStream is) throws IOException {
+	protected String parseString(InputStream inputStream) throws IOException {
+		InputStreamReader is = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
 		int oneChar, prevChar = -1;
 		StringBuilder str = new StringBuilder();
 		while ((oneChar = is.read()) != -1) {
@@ -311,7 +312,7 @@ public class JsonStrictReader {
 						str.append("\t");
 						break;
 					case 'u':
-						str.append(parse4hexDigits(is));
+						str.append(parse4hexDigits(inputStream));
 						break;
 					default:
 						str.append("\\").append(realChar);
