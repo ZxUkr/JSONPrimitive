@@ -85,7 +85,8 @@ public class JsonReader {
 		return isRootObject == null || isRootObject;
 	}
 
-	public Object parseJson(InputStream is) throws IOException, ParseException {
+	public Object parseJson(InputStream inputStream) throws IOException, ParseException {
+		InputStreamReader is = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
 		pos = 0L;
 		int oneChar;
 		while ((oneChar = is.read()) != -1) {
@@ -121,7 +122,7 @@ public class JsonReader {
 		return null;
 	}
 
-	protected void parseObject(InputStream is, LinkedHashMap<String, Object> data) throws IOException, ParseException {
+	protected void parseObject(InputStreamReader is, LinkedHashMap<String, Object> data) throws IOException, ParseException {
 		int oneChar;
 		String name = null;
 		StringBuilder value = new StringBuilder();
@@ -213,7 +214,7 @@ public class JsonReader {
 		}
 	}
 
-	protected void parseArray(InputStream is, ArrayList<Object> data) throws IOException, ParseException {
+	protected void parseArray(InputStreamReader is, ArrayList<Object> data) throws IOException, ParseException {
 		int oneChar;
 		StringBuilder value = new StringBuilder();
 		TOKEN current = TOKEN.VALUE;
@@ -312,7 +313,7 @@ public class JsonReader {
 		}*/
 	}
 
-	protected String parseString(InputStream is, int token) throws IOException {
+	protected String parseString(InputStreamReader is, int token) throws IOException {
 		int oneChar, prevChar = -1;
 		StringBuilder str = new StringBuilder();
 		while ((oneChar = is.read()) != -1) {
@@ -358,7 +359,7 @@ public class JsonReader {
 		return str.toString();
 	}
 
-	protected char parse4hexDigits(InputStream is) throws IOException {
+	protected char parse4hexDigits(InputStreamReader is) throws IOException {
 		String hex = "" + (char) is.read() + (char) is.read() + (char) is.read() + (char) is.read();
 		pos += 4;
 		int value = Integer.parseInt(hex, 16);
